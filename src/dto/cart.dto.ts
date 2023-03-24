@@ -1,8 +1,10 @@
 import { SubproductDto } from "./subproduct.dto"
 
 export class CartDto {
+  id: string
   user: string
-  products: [SubproductDto]
+  isActive: boolean
+  products: Array<SubproductDto>
   totalPrice: number
   totalProducts: number
   created_at: string

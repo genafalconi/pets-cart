@@ -13,4 +13,8 @@ export class IntegrationService {
     return await this.cartService.getUserCart(idUser)
   }
 
+  async getOrderCart(cartId: string) {
+    return await this.cartService.getOrderCart(cartId)
+  }
+
 }

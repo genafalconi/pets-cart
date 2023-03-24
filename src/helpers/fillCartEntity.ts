@@ -5,6 +5,7 @@ import { SubproductDto } from "src/dto/subproduct.dto";
 export function fillCartEntity(subProduct: SubproductDto, idUser: string): DocumentData {
   const cartToSave = new CartDto()
   cartToSave.user = idUser
+  cartToSave.isActive = true
   cartToSave.products = [subProduct]
   cartToSave.totalProducts = cartToSave.products.length
   cartToSave.totalPrice = subProduct.price * subProduct.quantity
