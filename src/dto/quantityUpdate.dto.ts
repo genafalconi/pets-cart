@@ -1,4 +1,4 @@
 export class QuantityUpdateDto {
-  idSubprod: string
-  newQuantity: number
+  idSubprod: string;
+  newQuantity: number;
 }

@@ -9,7 +9,7 @@ import { IntegrationModule } from './integration/integration.module';
       envFilePath: `env/${process.env.NODE_ENV || 'dev'}.env`,
     }),
     CartModule,
-    IntegrationModule
+    IntegrationModule,
   ],
   controllers: [],
   providers: [],

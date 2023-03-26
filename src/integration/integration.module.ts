@@ -5,6 +5,6 @@ import { IntegrationService } from './integration.service';
 
 @Module({
   controllers: [IntegrationController],
-  providers: [IntegrationService, CartService]
+  providers: [IntegrationService, CartService],
 })
 export class IntegrationModule {}

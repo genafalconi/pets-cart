@@ -3,18 +3,16 @@ import { CartService } from 'src/cart/cart.service';
 
 @Injectable()
 export class IntegrationService {
-
   constructor(
     @Inject(CartService)
-    private readonly cartService: CartService
+    private readonly cartService: CartService,
   ) { }
 
   async getUserCart(idUser: string) {
-    return await this.cartService.getUserCart(idUser)
+    return await this.cartService.getUserCart(idUser);
   }
 
   async getOrderCart(cartId: string) {
-    return await this.cartService.getOrderCart(cartId)
+    return await this.cartService.getOrderCart(cartId);
   }
-
 }
