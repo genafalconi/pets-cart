@@ -1,17 +1,15 @@
-import { DocumentData } from 'firebase-admin/firestore';
-import { SubproductDto } from 'src/dto/subproduct.dto';
+import { Cart } from 'src/schemas/cart.schema';
 
-export function updateCartTotals(updatedCart: DocumentData) {
+export function updateCartTotals(updatedCart: Cart) {
   let newTotalP = 0,
     newCant = 0;
-  updatedCart.products.map((elem: SubproductDto) => {
-    const subProdTotal = elem.quantity * elem.price;
+  updatedCart.subproducts.map((elem) => {
+    const subProdTotal = elem.quantity * elem.subproduct.sell_price;
     newTotalP += subProdTotal;
     newCant += elem.quantity;
   });
-  updatedCart.totalPrice = newTotalP;
-  updatedCart.totalProducts = newCant;
-  updatedCart.updated_at = new Date().toISOString();
+  updatedCart.total_price = newTotalP;
+  updatedCart.total_products = newCant;
 
   return updatedCart;
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { CartModule } from './cart/cart.module';
 
 @Module({
@@ -7,9 +8,16 @@ import { CartModule } from './cart/cart.module';
     ConfigModule.forRoot({
       envFilePath: `env/${process.env.NODE_ENV || 'dev'}.env`,
     }),
-    CartModule
+    MongooseModule.forRootAsync({
+      useFactory: async () => ({
+        uri: process.env.MONGO_DB,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }),
+    }),
+    CartModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

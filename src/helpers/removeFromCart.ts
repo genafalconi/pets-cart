@@ -1,27 +1,31 @@
 import { DocumentData } from 'firebase-admin/firestore';
 import { CartDto } from 'src/dto/cart.dto';
 import { SubproductDto } from 'src/dto/subproduct.dto';
+import { Cart } from 'src/schemas/cart.schema';
+import { Subproduct } from 'src/schemas/subprod.schema';
+
 
 export function removeSubprodFromCart(
   subprod: SubproductDto,
-  cart: DocumentData,
-): DocumentData {
-  const updatedProds = cart.products.filter(
-    (elem: SubproductDto) => elem.id !== subprod.id,
+  cart: Cart,
+): Cart {
+  console.log(subprod)
+  const updatedSubprods = cart.subproducts.filter(
+    (elem) => elem.subproduct._id.toString() !== subprod._id.toString(),
   );
-  cart.products = updatedProds;
+  console.log(updatedSubprods)
+  cart.subproducts = updatedSubprods;
 
   let newTotalP = 0,
     newCant = 0;
-  cart.products.map((elem: SubproductDto) => {
-    const subProdTotal = elem.quantity * elem.price;
-    newTotalP += subProdTotal;
-    newCant += elem.quantity;
-  });
+    cart.subproducts.forEach((elem) => {
+      const subProdTotal = elem.subproduct.sell_price * elem.quantity;
+      newTotalP += subProdTotal;
+      newCant += elem.quantity;
+    });
 
-  cart.totalPrice = newTotalP;
-  cart.totalProducts = newCant;
-  cart.updated_at = new Date().toISOString();
+  cart.total_price = newTotalP;
+  cart.total_products = newCant;
 
   return cart;
 }

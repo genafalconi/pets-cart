@@ -1,21 +1,20 @@
-import { DocumentData } from 'firebase-admin/firestore';
-import { CartDto } from 'src/dto/cart.dto';
+import { Document, Model, Types } from 'mongoose';
 import { SubproductDto } from 'src/dto/subproduct.dto';
+import { Cart } from 'src/schemas/cart.schema';
+import { Subproduct } from 'src/schemas/subprod.schema';
 
 export function fillCartEntity(
   subProduct: SubproductDto,
   idUser: string,
-): DocumentData {
-  const cartToSave = new CartDto();
-  cartToSave.user = idUser;
-  cartToSave.isActive = true;
-  cartToSave.products = [subProduct];
-  cartToSave.totalProducts = cartToSave.products.length;
-  cartToSave.totalPrice = subProduct.price * subProduct.quantity;
-  cartToSave.created_at = new Date().toISOString();
-  cartToSave.updated_at = '';
-
-  const plainObj = Object.assign({}, cartToSave);
-
-  return plainObj;
+  subproductSchema: Subproduct,
+  cartModel: Model<Cart>
+): Document {
+  const cartToSave = new cartModel({
+    user: new Types.ObjectId(idUser),
+    active: true,
+    subproducts: [{ subproduct: subproductSchema._id, quantity: subProduct.quantity }],
+    total_products: subProduct.quantity,
+    total_price: subProduct.sell_price * subProduct.quantity,
+  });
+  return cartToSave;
 }
