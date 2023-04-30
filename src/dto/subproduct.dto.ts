@@ -1,5 +1,11 @@
-import { Product } from "src/schemas/product.schema"
-import { AnimalAgeDto, AnimalDto, AnimalSizeDto, BrandDto, CategoryDto } from "./types.dto";
+import { Product } from 'src/schemas/product.schema';
+import {
+  AnimalAgeDto,
+  AnimalDto,
+  AnimalSizeDto,
+  BrandDto,
+  CategoryDto,
+} from './types.dto';
 
 export class SubproductDto {
   _id: string;

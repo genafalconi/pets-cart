@@ -7,12 +7,14 @@ export function fillCartEntity(
   subProduct: SubproductDto,
   idUser: string,
   subproductSchema: Subproduct,
-  cartModel: Model<Cart>
+  cartModel: Model<Cart>,
 ): Document {
   const cartToSave = new cartModel({
     user: new Types.ObjectId(idUser),
     active: true,
-    subproducts: [{ subproduct: subproductSchema._id, quantity: subProduct.quantity }],
+    subproducts: [
+      { subproduct: subproductSchema._id, quantity: subProduct.quantity },
+    ],
     total_products: subProduct.quantity,
     total_price: subProduct.sell_price * subProduct.quantity,
   });

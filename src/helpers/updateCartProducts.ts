@@ -6,12 +6,13 @@ export function updateCartProducts(
   userCart: Cart,
   oldCartSubprod: Array<{ subproduct: Subproduct; quantity: number }>,
   newProd: Subproduct,
-  newQuantity: number
+  newQuantity: number,
 ) {
-  let newTotalP = 0, newCant = 0;
+  let newTotalP = 0,
+    newCant = 0;
 
   const existProd = oldCartSubprod.find((elem: any) => {
-    return elem.subproduct._id.toString() === newProd._id.toString()
+    return elem.subproduct._id.toString() === newProd._id.toString();
   });
 
   if (existProd) {

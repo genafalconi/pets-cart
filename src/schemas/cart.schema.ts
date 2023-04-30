@@ -4,11 +4,18 @@ import { Subproduct } from './subprod.schema';
 
 @Schema({ timestamps: true })
 export class Cart extends Document {
-
-  @Prop({ type: [{ _id: false, subproduct: { type: Types.ObjectId, ref: 'Subproduct' }, quantity: 'number' }] })
+  @Prop({
+    type: [
+      {
+        _id: false,
+        subproduct: { type: Types.ObjectId, ref: 'Subproduct' },
+        quantity: 'number',
+      },
+    ],
+  })
   subproducts: {
-    subproduct: Subproduct,
-    quantity: number
+    subproduct: Subproduct;
+    quantity: number;
   }[];
 
   @Prop({ required: true })
@@ -29,15 +36,14 @@ export class Cart extends Document {
 
 export const CartSchema = SchemaFactory.createForClass(Cart);
 
-
 CartSchema.pre('findOne', function (next) {
   this.populate({
     path: 'subproducts.subproduct',
     model: 'Subproduct',
     populate: {
       path: 'product',
-      model: 'Product'
-    }
+      model: 'Product',
+    },
   });
   next();
 });

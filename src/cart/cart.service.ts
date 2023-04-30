@@ -13,31 +13,42 @@ import { Subproduct } from 'src/schemas/subprod.schema';
 
 @Injectable()
 export class CartService {
-
   constructor(
     @InjectModel(Cart.name)
     private readonly cartModel: Model<Cart>,
     @InjectModel(Subproduct.name)
-    private readonly subproductModel: Model<Subproduct>
-  ) { }
+    private readonly subproductModel: Model<Subproduct>,
+  ) {}
 
   async addToCart(subProduct: SubproductDto, idUser: string): Promise<Cart> {
-    const cartUser = await this.cartModel.findOne({ user: new Types.ObjectId(idUser), active: true }).exec();
-    const subproductFind = await this.subproductModel.findById(subProduct._id)
+    const cartUser = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
+    const subproductFind = await this.subproductModel.findById(subProduct._id);
 
     if (!cartUser) {
-      const cartToSave = fillCartEntity(subProduct, idUser, subproductFind, this.cartModel)
+      const cartToSave = fillCartEntity(
+        subProduct,
+        idUser,
+        subproductFind,
+        this.cartModel,
+      );
 
       const cartSave = await this.cartModel.create(cartToSave);
-      const cartSaved = await this.cartModel.findOne({ _id: cartSave._id })
+      const cartSaved = await this.cartModel.findOne({ _id: cartSave._id });
       Logger.log(cartSaved, 'Cart created');
 
       return cartSaved;
     } else {
-      const cartToUpdate = updateCartProducts(cartUser, cartUser.subproducts, subproductFind, subProduct.quantity)
+      const cartToUpdate = updateCartProducts(
+        cartUser,
+        cartUser.subproducts,
+        subproductFind,
+        subProduct.quantity,
+      );
 
-      const cartUpdate = await cartToUpdate.save()
-      const cartUpdated = await this.cartModel.findOne({ _id: cartUpdate._id })
+      const cartUpdate = await cartToUpdate.save();
+      const cartUpdated = await this.cartModel.findOne({ _id: cartUpdate._id });
       Logger.log(cartUpdated, 'Cart updated');
 
       return cartUpdated;
@@ -45,7 +56,9 @@ export class CartService {
   }
 
   async getUserCart(idUser: string): Promise<Cart> {
-    const cartUser = await this.cartModel.findOne({ user: new Types.ObjectId(idUser), active: true }).exec();
+    const cartUser = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
 
     if (!cartUser) {
       return new Cart();
@@ -56,14 +69,16 @@ export class CartService {
   }
 
   async addLocalCart(cartData: CartDto, idUser: string): Promise<Cart> {
-    const cartUser = await this.cartModel.findOne({ user: new Types.ObjectId(idUser), active: true }).exec();
+    const cartUser = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
 
     if (!cartUser) {
-      cartData.user = new Types.ObjectId(idUser)
+      cartData.user = new Types.ObjectId(idUser);
       const newCart = new this.cartModel(cartData);
-      const createdCart = await this.cartModel.create(newCart)
+      const createdCart = await this.cartModel.create(newCart);
 
-      const cartSaved = await this.cartModel.findOne(createdCart._id)
+      const cartSaved = await this.cartModel.findOne(createdCart._id);
       Logger.log(cartSaved, 'Local cart saved');
 
       return cartSaved;
@@ -71,32 +86,35 @@ export class CartService {
       let userCartUpdated: any;
       for (const elem of cartData.subproducts) {
         const subproduct = await this.subproductModel.findById(elem.subproduct);
-        userCartUpdated = updateCartProducts(cartUser, cartUser.subproducts, subproduct, elem.quantity);
+        userCartUpdated = updateCartProducts(
+          cartUser,
+          cartUser.subproducts,
+          subproduct,
+          elem.quantity,
+        );
       }
-      const cartUpdate = await this.cartModel.findOneAndUpdate(cartUser._id, userCartUpdated);
+      const cartUpdate = await this.cartModel.findOneAndUpdate(
+        cartUser._id,
+        userCartUpdated,
+      );
 
-      const cartUpdated = await this.cartModel.findOne(cartUpdate._id)
+      const cartUpdated = await this.cartModel.findOne(cartUpdate._id);
       Logger.log(cartUpdated, 'Local cart updated');
 
       return cartUpdated;
     }
   }
 
-
-  async removeFromCart(
-    subprod: SubproductDto,
-    idUser: string,
-  ): Promise<Cart> {
-    const cartDoc = await this.cartModel.findOne({ user: new Types.ObjectId(idUser), active: true }).exec();
+  async removeFromCart(subprod: SubproductDto, idUser: string): Promise<Cart> {
+    const cartDoc = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
 
     if (cartDoc) {
-      const updatedCart = removeSubprodFromCart(
-        subprod,
-        cartDoc
-      );
+      const updatedCart = removeSubprodFromCart(subprod, cartDoc);
       await this.cartModel.findByIdAndUpdate(cartDoc._id, updatedCart);
 
-      Logger.log(updatedCart, 'Removed subprod cart')
+      Logger.log(updatedCart, 'Removed subprod cart');
       return updatedCart;
     }
   }
@@ -105,7 +123,9 @@ export class CartService {
     subprodQuantity: QuantityUpdateDto,
     idUser: string,
   ): Promise<Cart> {
-    const cartFind = await this.cartModel.findOne({ user: new Types.ObjectId(idUser), active: true }).exec();
+    const cartFind = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
     if (cartFind) {
       cartFind.subproducts.forEach((elem) => {
         if (elem.subproduct._id.toString() === subprodQuantity.idSubprod) {
@@ -113,18 +133,26 @@ export class CartService {
         }
       });
       const userCartUpdated = updateCartTotals(cartFind);
-      const cartUpdate = await this.cartModel.findByIdAndUpdate(cartFind._id, userCartUpdated);
+      const cartUpdate = await this.cartModel.findByIdAndUpdate(
+        cartFind._id,
+        userCartUpdated,
+      );
 
-      const cartUpdated = await this.cartModel.findOne(cartUpdate._id)
+      const cartUpdated = await this.cartModel.findOne(cartUpdate._id);
       Logger.log(cartUpdated, 'Cart updated');
       return cartUpdated;
     }
   }
 
   async getOrderCart(cartId: string): Promise<Cart> {
-    const cartDoc: Cart = await this.cartModel.findById(new Types.ObjectId(cartId));
+    const cartDoc: Cart = await this.cartModel.findById(
+      new Types.ObjectId(cartId),
+    );
     cartDoc.active = false;
-    const orderCart = await this.cartModel.findByIdAndUpdate(cartDoc._id, cartDoc);
+    const orderCart = await this.cartModel.findByIdAndUpdate(
+      cartDoc._id,
+      cartDoc,
+    );
 
     return orderCart;
   }

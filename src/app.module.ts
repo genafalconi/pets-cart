@@ -20,4 +20,4 @@ import { CartModule } from './cart/cart.module';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

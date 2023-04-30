@@ -21,7 +21,7 @@ export class CartController {
   constructor(
     @Inject(CartService)
     private readonly cartService: CartService,
-  ) { }
+  ) {}
 
   @UseGuards(FirebaseAuthGuard)
   @Post('/add/:idUser')
