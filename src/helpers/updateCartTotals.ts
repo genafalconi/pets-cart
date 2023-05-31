@@ -8,8 +8,13 @@ export function updateCartTotals(updatedCart: Cart) {
     newTotalP += subProdTotal;
     newCant += elem.quantity;
   });
+
   updatedCart.total_price = newTotalP;
   updatedCart.total_products = newCant;
-
+  
+  if (updatedCart.total_products === 0) {
+    updatedCart.subproducts = []
+  }
+  
   return updatedCart;
 }

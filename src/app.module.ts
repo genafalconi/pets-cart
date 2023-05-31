@@ -15,7 +15,7 @@ import { CartModule } from './cart/cart.module';
         useUnifiedTopology: true,
         maxPoolSize: 30,
         retryAttempts: 2,
-        retryDelay: 1000
+        retryDelay: 1000,
       }),
     }),
     CartModule,

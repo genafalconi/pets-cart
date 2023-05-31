@@ -22,7 +22,10 @@ export class CartService {
 
   async addToCart(subProduct: SubproductDto, idUser: string): Promise<Cart> {
     const [cartUser, subproductFind] = await Promise.all([
-      this.cartModel.findOne({ user: new Types.ObjectId(idUser), active: true }).lean().exec(),
+      this.cartModel
+        .findOne({ user: new Types.ObjectId(idUser), active: true })
+        .lean()
+        .exec(),
       this.subproductModel.findById(subProduct._id).exec(),
     ]);
 
@@ -46,8 +49,12 @@ export class CartService {
         subproductFind,
         subProduct.quantity,
       );
-      console.log(cartToUpdate)
-      const cartUpdated: Cart = await this.cartModel.findOneAndUpdate({ _id: cartToUpdate._id }, cartToUpdate, { new: true });
+
+      const cartUpdated: Cart = await this.cartModel.findOneAndUpdate(
+        { _id: cartToUpdate._id },
+        cartToUpdate,
+        { new: true },
+      );
       Logger.log(cartUpdated, 'Cart updated');
 
       return cartUpdated;
@@ -71,7 +78,7 @@ export class CartService {
     const cartUser = await this.cartModel
       .findOne({ user: new Types.ObjectId(idUser), active: true })
       .exec();
- 
+
     if (!cartUser) {
       cartData.user = new Types.ObjectId(idUser);
       const newCart = new this.cartModel(cartData);

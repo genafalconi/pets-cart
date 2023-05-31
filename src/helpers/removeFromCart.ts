@@ -12,7 +12,6 @@ export function removeSubprodFromCart(
   const updatedSubprods = cart.subproducts.filter(
     (elem) => elem.subproduct._id.toString() !== subprod._id.toString(),
   );
-  console.log(updatedSubprods);
   cart.subproducts = updatedSubprods;
 
   let newTotalP = 0,
@@ -25,6 +24,10 @@ export function removeSubprodFromCart(
 
   cart.total_price = newTotalP;
   cart.total_products = newCant;
-
+  
+  if (cart.total_products === 0) {
+    cart.subproducts = []
+  }
+  
   return cart;
 }
