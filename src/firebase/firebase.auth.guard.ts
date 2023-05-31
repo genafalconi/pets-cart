@@ -17,7 +17,7 @@ export class FirebaseAuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     const idToken = authHeader.split(' ')[1];
-    console.log(idToken);
+
     try {
       const decodedToken = await auth(firebaseApp).verifyIdToken(idToken);
       req.user = decodedToken.uid;

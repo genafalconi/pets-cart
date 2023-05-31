@@ -9,9 +9,9 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { DocumentData } from 'firebase-admin/firestore';
 import { QuantityUpdateDto } from 'src/dto/quantityUpdate.dto';
 import { FirebaseAuthGuard } from 'src/firebase/firebase.auth.guard';
+import { Cart } from 'src/schemas/cart.schema';
 import { CartDto } from '../dto/cart.dto';
 import { SubproductDto } from '../dto/subproduct.dto';
 import { CartService } from './cart.service';
@@ -28,7 +28,7 @@ export class CartController {
   async addToCart(
     @Body() subProductDto: SubproductDto,
     @Param('idUser') idUser: string,
-  ): Promise<DocumentData> {
+  ): Promise<Cart> {
     return await this.cartService.addToCart(subProductDto, idUser);
   }
 
@@ -37,13 +37,13 @@ export class CartController {
   async removeFromCart(
     @Body() subProductDto: SubproductDto,
     @Param('idUser') idUser: string,
-  ): Promise<DocumentData> {
+  ): Promise<Cart> {
     return await this.cartService.removeFromCart(subProductDto, idUser);
   }
 
   @UseGuards(FirebaseAuthGuard)
   @Get('/:idUser')
-  async getUserCart(@Param('idUser') id: string): Promise<DocumentData> {
+  async getUserCart(@Param('idUser') id: string): Promise<Cart> {
     return await this.cartService.getUserCart(id);
   }
 
@@ -51,7 +51,7 @@ export class CartController {
   async saveLocalCart(
     @Body() cart: CartDto,
     @Param('idUser') idUser: string,
-  ): Promise<DocumentData> {
+  ): Promise<Cart> {
     return await this.cartService.addLocalCart(cart, idUser);
   }
 
@@ -60,7 +60,7 @@ export class CartController {
   async updateSubprodQuantity(
     @Body() subprodQuantity: QuantityUpdateDto,
     @Param('idUser') idUser: string,
-  ): Promise<DocumentData> {
+  ): Promise<Cart> {
     return await this.cartService.updateSubprodQuantity(
       subprodQuantity,
       idUser,

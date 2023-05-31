@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { CartModule } from './cart/cart.module';
 
 @Module({
@@ -7,7 +8,17 @@ import { CartModule } from './cart/cart.module';
     ConfigModule.forRoot({
       envFilePath: `env/${process.env.NODE_ENV || 'dev'}.env`,
     }),
-    CartModule
+    MongooseModule.forRootAsync({
+      useFactory: async () => ({
+        uri: process.env.MONGO_DB,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        maxPoolSize: 30,
+        retryAttempts: 2,
+        retryDelay: 1000,
+      }),
+    }),
+    CartModule,
   ],
   controllers: [],
   providers: [],

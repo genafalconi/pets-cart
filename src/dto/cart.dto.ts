@@ -1,12 +1,11 @@
-import { SubproductDto } from './subproduct.dto';
+import { Types } from 'mongoose';
+import { Subproduct } from 'src/schemas/subprod.schema';
 
 export class CartDto {
-  id: string;
-  user: string;
-  isActive: boolean;
-  products: Array<SubproductDto>;
-  totalPrice: number;
-  totalProducts: number;
-  created_at: string;
-  updated_at: string;
+  _id: string;
+  user: Types.ObjectId;
+  active: boolean;
+  subproducts: Array<{ subproduct: Subproduct; quantity: number }>;
+  total_price: number;
+  total_products: number;
 }

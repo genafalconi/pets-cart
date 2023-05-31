@@ -1,157 +1,124 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import {
-  CollectionReference,
-  DocumentData,
-  QuerySnapshot,
-} from 'firebase-admin/firestore';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { CartDto } from 'src/dto/cart.dto';
 import { QuantityUpdateDto } from 'src/dto/quantityUpdate.dto';
 import { SubproductDto } from 'src/dto/subproduct.dto';
-import { createCartEntity } from 'src/helpers/createCartEntity';
 import { fillCartEntity } from 'src/helpers/fillCartEntity';
 import { removeSubprodFromCart } from 'src/helpers/removeFromCart';
 import { updateCartProducts } from 'src/helpers/updateCartProducts';
 import { updateCartTotals } from 'src/helpers/updateCartTotals';
-import { firebaseFirestore } from '../firebase/firebase.app';
+import { Cart } from 'src/schemas/cart.schema';
+import { Subproduct } from 'src/schemas/subprod.schema';
 
 @Injectable()
 export class CartService {
-  private cartCollection: CollectionReference;
-  private prodCollection: CollectionReference;
+  constructor(
+    @InjectModel(Cart.name)
+    private readonly cartModel: Model<Cart>,
+    @InjectModel(Subproduct.name)
+    private readonly subproductModel: Model<Subproduct>,
+  ) { }
 
-  constructor() {
-    this.cartCollection = firebaseFirestore.collection('cart');
-    this.prodCollection = firebaseFirestore.collection('product');
-  }
+  async addToCart(subProduct: SubproductDto, idUser: string): Promise<Cart> {
+    const [cartUser, subproductFind] = await Promise.all([
+      this.cartModel
+        .findOne({ user: new Types.ObjectId(idUser), active: true })
+        .lean()
+        .exec(),
+      this.subproductModel.findById(subProduct._id).exec(),
+    ]);
 
-  async addToCart(
-    subProduct: SubproductDto,
-    idUser: string,
-  ): Promise<DocumentData> {
-    const cartDoc: DocumentData = await this.cartCollection
-      .where('user', '==', idUser)
-      .where('isActive', '!=', false)
-      .get();
-
-    if (cartDoc.empty) {
-      const newCart = fillCartEntity(subProduct, idUser);
-      const cartUser = this.cartCollection.doc();
-      await cartUser.set(Object.assign({}, newCart));
-
-      const cartSaved = await cartUser.get();
-      const cartWithId = {
-        id: cartSaved.id,
-        user: newCart.user,
-        products: newCart.products,
-        totalPrice: newCart.totalPrice,
-        totalProducts: newCart.totalProducts,
-        created_at: newCart.created_at,
-        updated_at: newCart.updated_at,
-      };
-      await cartUser.update(Object.assign({}, cartWithId));
-      const finalCartSaved = await cartUser.get();
-      Logger.log(cartWithId, 'Cart created');
-
-      return finalCartSaved.data();
-    } else {
-      const cartId = cartDoc.docs[0].id;
-      const cartRef = this.cartCollection.doc(cartId);
-      const userCart = cartDoc.docs[0].data();
-
-      const userCartUpdated = updateCartProducts(
-        userCart,
-        userCart.products,
+    if (!cartUser) {
+      const cartToSave = fillCartEntity(
         subProduct,
+        idUser,
+        subproductFind,
+        this.cartModel,
       );
 
-      Logger.log(userCartUpdated, 'Cart updated');
-      await cartRef.update(userCartUpdated);
-      const cartUpdated = await cartRef.get();
-      return cartUpdated.data();
+      const cartSave = await this.cartModel.create(cartToSave);
+      const cartSaved = await this.cartModel.findOne({ _id: cartSave._id });
+      Logger.log(cartSaved, 'Cart created');
+
+      return cartSaved;
+    } else {
+      const cartToUpdate: Cart = updateCartProducts(
+        cartUser,
+        cartUser.subproducts,
+        subproductFind,
+        subProduct.quantity,
+      );
+
+      const cartUpdated: Cart = await this.cartModel.findOneAndUpdate(
+        { _id: cartToUpdate._id },
+        cartToUpdate,
+        { new: true },
+      );
+      Logger.log(cartUpdated, 'Cart updated');
+
+      return cartUpdated;
     }
   }
 
-  async getUserCart(idUser: string): Promise<DocumentData> {
-    const cartDoc: DocumentData = await this.cartCollection
-      .where('user', '==', idUser)
-      .where('isActive', '!=', false)
-      .get();
-    if (cartDoc.empty) {
-      return {};
+  async getUserCart(idUser: string): Promise<Cart> {
+    const cartUser = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
+
+    if (!cartUser) {
+      return new Cart();
     } else {
-      const userCart = cartDoc.docs[0].data();
-      for (const prod of userCart?.products) {
-        const prodDoc: DocumentData = this.prodCollection.doc(prod.idProduct);
-        const prodCart = await prodDoc.get().then((doc) => {
-          return doc.data();
-        });
-        if (prodCart) prod.productName = prodCart.name;
-      }
-      Logger.log(userCart, 'Cart');
-      return userCart;
+      Logger.log(cartUser, 'Cart');
+      return cartUser;
     }
   }
 
-  async addLocalCart(cartData: CartDto, idUser: string): Promise<DocumentData> {
-    const cartDoc: DocumentData = await this.cartCollection
-      .where('user', '==', idUser)
-      .where('isActive', '!=', false)
-      .get();
-    if (cartDoc.empty) {
-      const newCart = createCartEntity(cartData, idUser);
-      const cartUser = this.cartCollection.doc();
-      await cartUser.set(Object.assign({}, newCart));
+  async addLocalCart(cartData: CartDto, idUser: string): Promise<Cart> {
+    const cartUser = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
 
-      const cartSaved = await cartUser.get();
-      const cartWithId = {
-        id: cartSaved.id,
-        user: newCart.user,
-        products: newCart.products,
-        totalPrice: newCart.totalPrice,
-        totalProducts: newCart.totalProducts,
-        created_at: newCart.created_at,
-        updated_at: newCart.updated_at,
-      };
-      await cartUser.update(Object.assign({}, cartWithId));
-      const finalCartSaved = await cartUser.get();
-      Logger.log(finalCartSaved, 'Cart created');
+    if (!cartUser) {
+      cartData.user = new Types.ObjectId(idUser);
+      const newCart = new this.cartModel(cartData);
+      const createdCart = await this.cartModel.create(newCart);
 
-      return finalCartSaved.data();
+      const cartSaved = await this.cartModel.findOne(createdCart._id);
+      Logger.log(cartSaved, 'Local cart saved');
+
+      return cartSaved;
     } else {
-      const cartId = cartDoc.docs[0].id;
-      const cartRef = this.cartCollection.doc(cartId);
-      const userCart = cartDoc.docs[0].data();
-
       let userCartUpdated: any;
-      cartData.products.map((elem) => {
-        userCartUpdated = updateCartProducts(userCart, userCart.products, elem);
-      });
+      for (const elem of cartData.subproducts) {
+        const subproduct = await this.subproductModel.findById(elem.subproduct);
+        userCartUpdated = updateCartProducts(
+          cartUser,
+          cartUser.subproducts,
+          subproduct,
+          elem.quantity,
+        );
+      }
+      const cartUpdate = await this.cartModel.findOneAndUpdate(
+        cartUser._id,
+        userCartUpdated,
+      );
 
-      await cartRef.update(userCartUpdated);
-      const cartUpdated = await cartRef.get();
-      Logger.log(cartUpdated, 'Local cart saved');
+      const cartUpdated = await this.cartModel.findOne(cartUpdate._id);
+      Logger.log(cartUpdated, 'Local cart updated');
 
-      return cartUpdated.data();
+      return cartUpdated;
     }
   }
 
-  async removeFromCart(
-    subprod: SubproductDto,
-    idUser: string,
-  ): Promise<DocumentData> {
-    const cartDoc: DocumentData = await this.cartCollection
-      .where('user', '==', idUser)
-      .where('isActive', '!=', false)
-      .get();
-    if (!cartDoc.empty) {
-      const updatedCart = removeSubprodFromCart(
-        subprod,
-        cartDoc.docs[0].data(),
-      );
-      const cartId = cartDoc.docs[0].id;
-      const cartRef = this.cartCollection.doc(cartId);
+  async removeFromCart(subprod: SubproductDto, idUser: string): Promise<Cart> {
+    const cartDoc = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
 
-      await cartRef.update(updatedCart);
+    if (cartDoc) {
+      const updatedCart = removeSubprodFromCart(subprod, cartDoc);
+      await this.cartModel.findByIdAndUpdate(cartDoc._id, updatedCart);
 
       Logger.log(updatedCart, 'Removed subprod cart');
       return updatedCart;
@@ -161,40 +128,38 @@ export class CartService {
   async updateSubprodQuantity(
     subprodQuantity: QuantityUpdateDto,
     idUser: string,
-  ): Promise<DocumentData> {
-    const cartDoc: DocumentData = await this.cartCollection
-      .where('user', '==', idUser)
-      .where('isActive', '!=', false)
-      .get();
-
-    if (!cartDoc.empty) {
-      const cartId = cartDoc.docs[0].id;
-      const cartRef = this.cartCollection.doc(cartId);
-      const userCart = cartDoc.docs[0].data();
-
-      userCart.products.map((elem: SubproductDto) => {
-        if (elem.id === subprodQuantity.idSubprod) {
+  ): Promise<Cart> {
+    const cartFind = await this.cartModel
+      .findOne({ user: new Types.ObjectId(idUser), active: true })
+      .exec();
+    if (cartFind) {
+      cartFind.subproducts.forEach((elem) => {
+        if (elem.subproduct._id.toString() === subprodQuantity.idSubprod) {
           elem.quantity = subprodQuantity.newQuantity;
         }
       });
-      const userCartUpdated = updateCartTotals(userCart);
+      const userCartUpdated = updateCartTotals(cartFind);
+      const cartUpdate = await this.cartModel.findByIdAndUpdate(
+        cartFind._id,
+        userCartUpdated,
+      );
 
-      Logger.log(userCartUpdated, 'Cart updated');
-      await cartRef.update(userCartUpdated);
-      const cartUpdated = await cartRef.get();
-      return cartUpdated.data();
+      const cartUpdated = await this.cartModel.findOne(cartUpdate._id);
+      Logger.log(cartUpdated, 'Cart updated');
+      return cartUpdated;
     }
   }
 
-  async getOrderCart(cartId: string): Promise<DocumentData> {
-    const cartDoc: DocumentData = await this.cartCollection.doc(cartId).get();
-    const cartToDisactive = cartDoc.data();
-    const cartRef = this.cartCollection.doc(cartDoc.id);
+  async getOrderCart(cartId: string): Promise<Cart> {
+    const cartDoc: Cart = await this.cartModel.findById(
+      new Types.ObjectId(cartId),
+    );
+    cartDoc.active = false;
+    const orderCart = await this.cartModel.findByIdAndUpdate(
+      cartDoc._id,
+      cartDoc,
+    );
 
-    cartToDisactive.isActive = false;
-    await cartRef.update(cartToDisactive);
-
-    const cartUpdated = await cartRef.get();
-    return cartUpdated.data();
+    return orderCart;
   }
 }
