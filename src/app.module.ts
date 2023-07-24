@@ -17,10 +17,6 @@ import { Connection } from 'mongoose';
         maxPoolSize: 30,
         retryAttempts: 2,
         retryDelay: 1000,
-        connectionFactory: (connection: Connection) => {
-          connection.plugin(require('mongoose-autopopulate'));
-          return connection;
-        }
       }),
     }),
     CartModule,
@@ -28,4 +24,4 @@ import { Connection } from 'mongoose';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
