@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CartModule } from './cart/cart.module';
+import { Connection } from 'mongoose';
 
 @Module({
   imports: [
@@ -16,6 +17,10 @@ import { CartModule } from './cart/cart.module';
         maxPoolSize: 30,
         retryAttempts: 2,
         retryDelay: 1000,
+        connectionFactory: (connection: Connection) => {
+          connection.plugin(require('mongoose-autopopulate'));
+          return connection;
+        }
       }),
     }),
     CartModule,
@@ -23,4 +28,4 @@ import { CartModule } from './cart/cart.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

@@ -10,7 +10,7 @@ import {
 export class SubproductDto {
   _id: string;
   product: Product;
-  buy_price: string;
+  buy_price: number;
   sell_price: number;
   size: string;
   category: CategoryDto;

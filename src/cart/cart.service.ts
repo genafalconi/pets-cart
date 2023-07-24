@@ -18,7 +18,7 @@ export class CartService {
     private readonly cartModel: Model<Cart>,
     @InjectModel(Subproduct.name)
     private readonly subproductModel: Model<Subproduct>,
-  ) { }
+  ) {}
 
   async addToCart(subProduct: SubproductDto, idUser: string): Promise<Cart> {
     const [cartUser, subproductFind] = await Promise.all([

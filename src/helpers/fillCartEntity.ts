@@ -13,7 +13,7 @@ export function fillCartEntity(
     user: new Types.ObjectId(idUser),
     active: true,
     subproducts: [
-      { subproduct: subproductSchema._id, quantity: subProduct.quantity },
+      { subproduct: subproductSchema._id, quantity: subProduct.quantity, profit: (subProduct.sell_price - subProduct.buy_price) * subProduct.quantity  },
     ],
     total_products: subProduct.quantity,
     total_price: subProduct.sell_price * subProduct.quantity,

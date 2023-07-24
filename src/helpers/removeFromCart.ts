@@ -24,10 +24,10 @@ export function removeSubprodFromCart(
 
   cart.total_price = newTotalP;
   cart.total_products = newCant;
-  
+
   if (cart.total_products === 0) {
-    cart.subproducts = []
+    cart.subproducts = [];
   }
-  
+
   return cart;
 }
