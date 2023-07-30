@@ -1,8 +1,5 @@
-import { DocumentData } from 'firebase-admin/firestore';
-import { CartDto } from 'src/dto/cart.dto';
 import { SubproductDto } from 'src/dto/subproduct.dto';
 import { Cart } from 'src/schemas/cart.schema';
-import { Subproduct } from 'src/schemas/subprod.schema';
 
 export function removeSubprodFromCart(
   subprod: SubproductDto,

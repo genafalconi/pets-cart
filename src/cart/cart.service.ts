@@ -18,7 +18,7 @@ export class CartService {
     private readonly cartModel: Model<Cart>,
     @InjectModel(Subproduct.name)
     private readonly subproductModel: Model<Subproduct>,
-  ) { }
+  ) {}
 
   async addToCart(subProduct: SubproductDto, idUser: string): Promise<Cart> {
     const [cartUser, subproductFind] = await Promise.all([
@@ -82,7 +82,7 @@ export class CartService {
     if (!cartUser) {
       cartData.user = new Types.ObjectId(idUser);
       const newCart = new this.cartModel(cartData);
-      const cartSaved = await this.cartModel.create(newCart)
+      const cartSaved = await this.cartModel.create(newCart);
 
       Logger.log(cartSaved, 'Local cart saved');
 
