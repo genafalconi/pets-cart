@@ -21,7 +21,6 @@ export function updateCartProducts(
       newTotalP += subProdTotal;
       newCant += elem.quantity;
     });
-
   } else {
     const newSubProd: { subproduct: Subproduct; quantity: number } = {
       subproduct: newProd,
@@ -36,10 +35,10 @@ export function updateCartProducts(
   }
   userCart.total_price = newTotalP;
   userCart.total_products = newCant;
-  
+
   if (userCart.total_products === 0) {
-    userCart.subproducts = []
+    userCart.subproducts = [];
   }
-  
+
   return userCart;
 }

@@ -82,9 +82,8 @@ export class CartService {
     if (!cartUser) {
       cartData.user = new Types.ObjectId(idUser);
       const newCart = new this.cartModel(cartData);
-      const createdCart = await this.cartModel.create(newCart);
+      const cartSaved = await this.cartModel.create(newCart)
 
-      const cartSaved = await this.cartModel.findOne(createdCart._id);
       Logger.log(cartSaved, 'Local cart saved');
 
       return cartSaved;
@@ -99,12 +98,10 @@ export class CartService {
           elem.quantity,
         );
       }
-      const cartUpdate = await this.cartModel.findOneAndUpdate(
+      const cartUpdated = await this.cartModel.findOneAndUpdate(
         cartUser._id,
         userCartUpdated,
       );
-
-      const cartUpdated = await this.cartModel.findOne(cartUpdate._id);
       Logger.log(cartUpdated, 'Local cart updated');
 
       return cartUpdated;
