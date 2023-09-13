@@ -8,13 +8,12 @@ export function updateCartProducts(
   newQuantity: number,
 ) {
   let newTotalP = 0,
-    newCant = 0,
-    newProfit = 0;
+    newCant = 0;
 
   const existProd = oldCartSubprod.find((elem: any) => {
     return elem.subproduct._id.toString() === newProd._id.toString();
   });
-console.log(existProd)
+
   if (existProd) {
     existProd.quantity += newQuantity;
     oldCartSubprod.map((elem: any) => {
