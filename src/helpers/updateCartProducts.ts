@@ -17,12 +17,14 @@ export function updateCartProducts(
   if (existProd) {
     existProd.quantity += newQuantity;
     oldCartSubprod.map((elem: any) => {
+      if(elem.subproduct.highlight) elem.subproduct.sell_price = elem.subproduct.sale_price
       const subProdTotal = elem.quantity * elem.subproduct.sell_price;
       newTotalP += subProdTotal;
       newCant += elem.quantity;
       elem.profit = (elem.subproduct.sell_price - elem.subproduct.buy_price) * elem.quantity
     });
   } else {
+    if(newProd.highlight) newProd.sell_price = newProd.sale_price
     const newSubProd: { subproduct: Subproduct; quantity: number, profit: number } = {
       subproduct: newProd,
       quantity: newQuantity,
@@ -30,6 +32,7 @@ export function updateCartProducts(
     };
     oldCartSubprod.push(newSubProd);
     oldCartSubprod.map((elem: any) => {
+      if(elem.subproduct.highlight) elem.subproduct.sell_price = elem.subproduct.sale_price;
       const subProdTotal = elem.quantity * elem.subproduct.sell_price;
       newTotalP += subProdTotal;
       newCant += elem.quantity;

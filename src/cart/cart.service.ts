@@ -37,8 +37,7 @@ export class CartService {
         this.cartModel,
       );
 
-      const cartSave = await this.cartModel.create(cartToSave);
-      const cartSaved = await this.cartModel.findOne({ _id: cartSave._id });
+      const cartSaved = await this.cartModel.create(cartToSave);
       Logger.log(cartSaved, 'Cart created');
 
       return cartSaved;

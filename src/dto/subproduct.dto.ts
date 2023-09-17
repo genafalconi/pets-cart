@@ -21,4 +21,5 @@ export class SubproductDto {
   active: boolean;
   stock: number;
   quantity: number;
+  sale_price: number;
 }
