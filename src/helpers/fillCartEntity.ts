@@ -9,12 +9,14 @@ export function fillCartEntity(
   subproductSchema: Subproduct,
   cartModel: Model<Cart>,
 ): Document {
+  if (subproductSchema.highlight) subproductSchema.sell_price = subProduct.sale_price
+
   const cartToSave = new cartModel({
     user: new Types.ObjectId(idUser),
     active: true,
     subproducts: [
       {
-        subproduct: subproductSchema._id,
+        subproduct: subproductSchema,
         quantity: subProduct.quantity,
         profit:
           (subProduct.sell_price - subProduct.buy_price) * subProduct.quantity,
