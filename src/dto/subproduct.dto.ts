@@ -12,7 +12,7 @@ export class SubproductDto {
   product: Product;
   buy_price: number;
   sell_price: number;
-  size: string;
+  size: number;
   category: CategoryDto;
   animal: AnimalDto;
   brand: BrandDto;

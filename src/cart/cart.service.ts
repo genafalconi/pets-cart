@@ -18,7 +18,7 @@ export class CartService {
     private readonly cartModel: Model<Cart>,
     @InjectModel(Subproduct.name)
     private readonly subproductModel: Model<Subproduct>,
-  ) {}
+  ) { }
 
   async addToCart(subProduct: SubproductDto, idUser: string): Promise<Cart> {
     const [cartUser, subproductFind] = await Promise.all([
@@ -40,7 +40,14 @@ export class CartService {
       const cartSaved = await this.cartModel.create(cartToSave);
       Logger.log(cartSaved, 'Cart created');
 
-      return cartSaved;
+      return cartSaved.populate({
+        path: 'subproducts.subproduct',
+        model: 'Subproduct',
+        populate: {
+          path: 'product',
+          model: 'Product',
+        },
+      });
     } else {
       const cartToUpdate: Cart = updateCartProducts(
         cartUser,
